@@ -13,14 +13,14 @@
   },
   {
     "content": "Phase 2: Test frontend build and check for import errors",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Phase 2: Verify all user stories are working (add, edit, delete, toggle, filter, empty states)",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "Phase 2: End to End Testing using Testing Agent",
-    "status": "pending"
+    "status": "in_progress"
   }
 ]
