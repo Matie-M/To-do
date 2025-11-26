@@ -1,0 +1,67 @@
+name: Real Deployment Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' # Specify your Python version (e.g., '3.9', '3.11')
+
+      - name: Install Backend Dependencies
+        run: pip install -r requirements.txt
+        working-directory: backend # Assuming requirements.txt is in the backend directory
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify your Node.js version (e.g., '18', '20')
+
+      - name: Install Frontend Dependencies
+        run: npm install
+        working-directory: frontend # Assuming package.json is in the frontend directory
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: frontend
+        # This step builds your frontend application, typically outputting to 'frontend/dist' or 'frontend/build'.
+
+      - name: Prepare Backend for Deployment (Copy Frontend assets)
+        run: |
+          # This step assumes your Python backend is configured to serve static frontend assets.
+          # Adjust the destination path ('backend/static') based on your backend framework's configuration
+          # (e.g., Django's STATICFILES_DIRS, Flask's static_folder).
+          # It copies the built frontend (e.g., from 'frontend/dist') into the backend's static assets directory.
+          mkdir -p backend/static
+          cp -r frontend/dist/* backend/static/
+
+      - name: Deploy to Render.com
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }} # The unique ID of your service on Render.com
+        run: |
+          # This step triggers a deployment on Render.com for a pre-existing service.
+          # Ensure you have 'RENDER_API_KEY' and 'RENDER_SERVICE_ID' set as secrets in your GitHub repository.
+          #
+          # The Render service itself must be configured to:
+          # 1. Be connected to this GitHub repository.
+          # 2. Have appropriate Build and Start Commands for your Python backend
+          #    (e.g., `pip install -r requirements.txt` and `gunicorn app:app`).
+          #
+          # This `curl` command makes an API call to Render to explicitly initiate a new deploy.
+          curl -X POST \
+               -H "Authorization: Bearer ${RENDER_API_KEY}" \
+               -H "Accept: application/json" \
+               "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys"
+          #
+          # When triggered, Render will pull the latest code from this repository
+          # (which now includes the built frontend assets within the 'backend' directory)
+          # and run its configured build and start commands.
