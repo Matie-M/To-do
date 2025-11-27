@@ -1,0 +1,38 @@
+name: Build Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18' # Specify a common LTS version to address 'Incorrect Node.js Version'
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json' # Cache dependencies for faster builds
+
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend # Crucial for monorepos. Addresses 'Missing or Failed Dependencies' if the working directory was incorrect.
+      run: npm install
+
+    - name: Build Frontend Application
+      working-directory: ./frontend # Crucial for monorepos. Addresses 'Frontend Code Errors or Build Script Misconfiguration' by ensuring the build command runs in the correct context.
+      run: npm run build
+      env:
+        CI: true # Often required for Create React App builds in CI environments
