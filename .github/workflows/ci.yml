@@ -1,0 +1,78 @@
+name: CI/CD Pipeline
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_prepare_backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # --- Frontend Build Steps ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Adjust as needed for your frontend project
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend Assets
+        working-directory: ./frontend
+        run: npm run build # Assumes 'npm run build' outputs to 'frontend/dist'
+
+      # --- Backend Preparation Steps (Fixing the Copy Failure) ---
+      - name: Create Backend Static Directory
+        run: mkdir -p backend/static
+
+      - name: Copy Frontend Assets to Backend
+        run: |
+          # Check if the frontend build output directory exists
+          if [ -d "frontend/dist" ]; then
+            echo "Copying frontend assets from 'frontend/dist' to 'backend/static/'..."
+            # Remove existing static files to ensure a clean copy
+            rm -rf backend/static/*
+            # Copy contents (not the 'dist' folder itself) into 'backend/static'
+            cp -r frontend/dist/. backend/static/
+            echo "Frontend assets copied successfully."
+          else
+            echo "Error: Frontend build output directory 'frontend/dist' not found."
+            echo "Please ensure the 'npm run build' command in 'frontend' creates a 'dist' folder."
+            exit 1
+          fi
+
+      # --- Backend Test Steps ---
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # Adjust as needed for your backend project
+
+      - name: Install Backend Dependencies
+        # Assuming backend dependencies are listed in backend/requirements.txt
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Backend Tests
+        # Assuming pytest is used and 'backend_test.py' and 'tests/' contain tests
+        # Ensure pytest is installed for the runner environment
+        run: |
+          pip install pytest
+          pytest backend_test.py tests/
+
+      # --- Further Deployment Steps (Optional) ---
+      # - name: Build Backend Docker Image (Example)
+      #   run: docker build -t my-backend backend
+
+      # - name: Deploy (Example)
+      #   run: echo "Deployment step goes here"
