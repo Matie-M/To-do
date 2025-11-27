@@ -1,12 +1,12 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Frontend application build configuration.",
+  "main": "index.js",
   "scripts": {
-    "dev": "echo \"Run development server\"",
-    "build": "echo \"Frontend build successful\"",
-    "start": "echo \"Start application\""
+    "build": "mkdir -p dist && echo '<!DOCTYPE html>\n<html lang=\"en\"><head><meta charset=\"UTF-8\"><title>Frontend App</title></head><body><h1>Frontend Application Content</h1></body></html>' > dist/index.html && echo 'Frontend build artifacts generated in dist/.'"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
