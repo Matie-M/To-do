@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18' # Specify a common LTS version, e.g., '18', '20', or 'lts/*'
+
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm install # Or 'yarn install' if using Yarn
+
+    # Add additional steps for building, testing, or deploying the frontend here
+    # - name: Build Frontend
+    #   working-directory: ./frontend
+    #   run: npm run build
+
+    # - name: Run Frontend Tests
+    #   working-directory: ./frontend
+    #   run: npm test
